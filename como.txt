@@ -1,0 +1,6 @@
+app/components/FaceCAm para el funcionamiento del reconocimiento facial
+public/models/face_recognition_model_shard código máquina red neuronal. Modelos gratuitos que puedo encontrar en github
+page-tsx de momento interfaz cutre
+
+para montar la interfaz, tanto en FaceCam omo en page.tsx
+recomendable page.tsx
