@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import { useUmbrellaAudio } from "@/hooks/useUmbrellaAudio";
 import {
   Camera,
   ShieldCheck,
@@ -33,6 +34,7 @@ export default function UmbrellaLogin() {
   const [scanProgress, setScanProgress] = useState(0);
   const [isRegistered, setIsRegistered] = useState(false);
   const faceCamRef = useRef<any>(null);
+  const { playBeep, playScanning, playGranted, playDenied, playAmbience } = useUmbrellaAudio();
 
   // Verificar si ya hay un rostro registrado al cargar
   useEffect(() => {
@@ -40,17 +42,27 @@ export default function UmbrellaLogin() {
     if (stored) {
       setIsRegistered(true);
     }
-  }, []);
+    
+    // Sonido ambiente al iniciar (muy sutil)
+    const stopAmbience = playAmbience();
+    
+    return () => {
+      if (stopAmbience) stopAmbience();
+    };
+  }, [playAmbience]);
 
   const handleStartCamera = () => {
+    playBeep();
     setStage("camera-active");
   };
 
   const handleGoToRegistration = () => {
+    playBeep();
     setStage("registration");
   };
 
   const handleRegister = () => {
+    playBeep();
     // Llamar al FaceCam para capturar y guardar
     if (faceCamRef.current) {
       faceCamRef.current.capture("save");
@@ -58,17 +70,26 @@ export default function UmbrellaLogin() {
   };
 
   const handleRegistrationComplete = () => {
+    playGranted();
     setIsRegistered(true);
     setStage("camera-active");
   };
 
   const handleStartScan = () => {
+    playScanning();
     setStage("scanning");
+    
     // Simular progreso de escaneo
     let progress = 0;
     const interval = setInterval(() => {
       progress += 2;
       setScanProgress(progress);
+      
+      // Beep cada 20%
+      if (progress % 20 === 0 && progress < 100) {
+        playBeep();
+      }
+      
       if (progress >= 100) {
         clearInterval(interval);
         // Iniciar verificación real
@@ -80,19 +101,23 @@ export default function UmbrellaLogin() {
   };
 
   const handleVerified = () => {
+    playGranted();
     setStage("verified");
   };
 
   const handleDenied = () => {
+    playDenied();
     setStage("denied");
   };
 
   const handleReset = () => {
+    playBeep();
     setStage("initial");
     setScanProgress(0);
   };
 
   const handleClearRegistration = () => {
+    playBeep();
     if (faceCamRef.current) {
       faceCamRef.current.reset();
     }
@@ -544,6 +569,7 @@ export default function UmbrellaLogin() {
                 <Button
                   className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold"
                   size="lg"
+                  onClick={playBeep}
                 >
                   PROCEED TO SECURE AREA
                 </Button>
@@ -660,6 +686,7 @@ export default function UmbrellaLogin() {
                 <Button
                   variant="outline"
                   className="w-full border-zinc-700 text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                  onClick={playBeep}
                 >
                   Request Support
                 </Button>
